@@ -4,10 +4,14 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
+  interpolateColor,
 } from "react-native-reanimated";
+
+const PressableAnimated = Animated.createAnimatedComponent(Pressable);
 
 import { THEME } from "../../styles/theme";
 import { styles } from "./styles";
+import { useEffect } from "react";
 
 const TYPE_COLORS = {
   EASY: THEME.COLORS.BRAND_LIGHT,
@@ -30,10 +34,26 @@ export function Level({
   const COLOR = TYPE_COLORS[type];
 
   const scale = useSharedValue(1);
+  const checked = useSharedValue(0);
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: scale.value }],
+      backgroundColor: interpolateColor(
+        checked.value,
+        [0, 1],
+        ["transparent", COLOR]
+      ),
+    };
+  });
+
+  const animatedTextStyle = useAnimatedStyle(() => {
+    return {
+      color: interpolateColor(
+        checked.value,
+        [0, 1],
+        [COLOR, THEME.COLORS.GREY_100]
+      ),
     };
   });
 
@@ -46,27 +66,26 @@ export function Level({
     scale.value = withTiming(1, { duration: 1000 });
   }
 
+  useEffect(() => {
+    checked.value = isChecked ? 1 : 0;
+  }, [isChecked]);
+
   return (
-    <Pressable onPressIn={onPressIn} onPressOut={onPressOut} {...rest}>
-      <Animated.View
-        style={[
-          styles.container,
-          animatedContainerStyle,
-          {
-            borderColor: COLOR,
-            backgroundColor: isChecked ? COLOR : "transparent",
-          },
-        ]}
-      >
-        <Text
-          style={[
-            styles.title,
-            { color: isChecked ? THEME.COLORS.GREY_100 : COLOR },
-          ]}
-        >
-          {title}
-        </Text>
-      </Animated.View>
-    </Pressable>
+    <PressableAnimated
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      style={[
+        styles.container,
+        animatedContainerStyle,
+        {
+          borderColor: COLOR,
+        },
+      ]}
+      {...rest}
+    >
+      <Animated.Text style={[styles.title, animatedTextStyle]}>
+        {title}
+      </Animated.Text>
+    </PressableAnimated>
   );
 }
