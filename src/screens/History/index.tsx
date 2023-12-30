@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Pressable,
-} from "react-native";
+import { View, ScrollView, Alert, Pressable } from "react-native";
 import { HouseLine, Trash } from "phosphor-react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { Header } from "../../components/Header";
@@ -25,6 +19,7 @@ import { THEME } from "../../styles/theme";
 export function History() {
   const [isLoading, setIsLoading] = useState(true);
   const [history, setHistory] = useState<HistoryProps[]>([]);
+  const swipeableRefs = useRef<Swipeable[]>([]);
 
   const { goBack } = useNavigation();
 
@@ -40,7 +35,9 @@ export function History() {
     fetchHistory();
   }
 
-  function handleRemove(id: string) {
+  function handleRemove(id: string, index: number) {
+    swipeableRefs.current?.[index].close();
+
     Alert.alert("Remover", "Deseja remover esse registro?", [
       {
         text: "Sim",
@@ -71,26 +68,47 @@ export function History() {
         contentContainerStyle={styles.history}
         showsVerticalScrollIndicator={false}
       >
-        {history.map((item) => (
+        {history.map((item, index) => (
           <Animated.View
             entering={SlideInRight}
             exiting={SlideOutRight}
             layout={Layout.springify()}
             key={item.id}
           >
-            <TouchableOpacity onPress={() => handleRemove(item.id)}>
-              <Swipeable
-                containerStyle={styles.swipeableContainer}
-                overshootLeft={false}
-                renderLeftActions={() => (
-                  <Pressable style={styles.swipeableRemove}>
-                    <Trash size={32} color={THEME.COLORS.GREY_100} />
-                  </Pressable>
-                )}
-              >
-                <HistoryCard data={item} />
-              </Swipeable>
-            </TouchableOpacity>
+            <Swipeable
+              ref={(ref) => {
+                if (ref) {
+                  swipeableRefs.current.push(ref);
+                }
+              }}
+              containerStyle={styles.swipeableContainer}
+              /* garante que o movimento nao irá acontecer para a direita, sem colocar essa funcao no IOS algumas vezes pode ter como puxar pelo lado que
+                nao foi definido
+              */
+              renderRightActions={() => null}
+              overshootLeft={false}
+              /* Quantidade de pixel que ele abre */
+              leftThreshold={10}
+              /* 
+              Quando a pessoa arrasta para abrir algo pode executar algo
+              
+              onSwipeableOpen={} 
+
+              Quando a pessoa vai abrir ainda
+              onSwipeableWillOpen={}
+              */
+
+              renderLeftActions={() => (
+                <Pressable
+                  style={styles.swipeableRemove}
+                  onPress={() => handleRemove(item.id, index)}
+                >
+                  <Trash size={32} color={THEME.COLORS.GREY_100} />
+                </Pressable>
+              )}
+            >
+              <HistoryCard data={item} />
+            </Swipeable>
           </Animated.View>
         ))}
       </ScrollView>

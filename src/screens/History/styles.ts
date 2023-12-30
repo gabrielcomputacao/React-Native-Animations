@@ -9,6 +9,8 @@ export const styles = StyleSheet.create({
   },
   history: {
     padding: 32,
+    /* garante que a lista cresça e ocupe todo o espaço */
+    flexGrow: 1,
   },
   swipeableContainer: {
     width: "100%",
