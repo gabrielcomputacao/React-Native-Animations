@@ -66,7 +66,7 @@ export function Quiz() {
       width: "110%",
       left: "-5%",
       /* extrapolate garente que seja trabalhado entre os ranges propostos */
-      opacity: interpolate(scrollY.value, [50, 90], [0, 1], Extrapolate.CLAMP),
+      opacity: interpolate(scrollY.value, [50, 90], [0, 10], Extrapolate.CLAMP),
       transform: [
         {
           translateY: interpolate(
