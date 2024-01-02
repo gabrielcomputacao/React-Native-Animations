@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Alert, Text, View, BackHandler } from "react-native";
 
 import { useNavigation, useRoute } from "@react-navigation/native";
 
@@ -266,6 +266,18 @@ export function Quiz() {
       handleNextQuestion();
     }
   }, [points]);
+
+  useEffect(() => {
+    /* Fica escutando o botão do celular, se for clicado escuta o click e chama a função de confirmar a volta */
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleStop
+    );
+
+    /* quando se colocar um eventlistener em um useEffect precisa colocar a função de retorno para limpar essa escuta */
+
+    return () => backHandler.remove();
+  }, []);
 
   if (isLoading) {
     return <Loading />;
